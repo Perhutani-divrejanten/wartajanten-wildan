@@ -759,14 +759,46 @@
                                                         html += '</ul>';
                                                         catList.innerHTML = html;
                                                     }
-                                                    // Tags (ambil dari judul, author, dan pecah kata unik)
-                                                    let tags = new Set();
+                                                    // Tags: pilih maksimal 100 tag paling populer atau terbaru
+                                                    const tagCounts = {};
                                                     articles.forEach(a => {
-                                                        if (a.title) a.title.split(/\s+/).forEach(word => tags.add(word.replace(/[^\w\u00C0-\u024F-]+/g, '')));
-                                                        if (a.author) tags.add(a.author);
+                                                        const articleDate = a.date ? new Date(a.date).getTime() : 0;
+
+                                                        if (a.title) {
+                                                            a.title.split(/\s+/).forEach(word => {
+                                                                const tag = word.replace(/[^\w\u00C0-\u024F-]+/g, '');
+                                                                if (tag.length > 2) {
+                                                                    if (!tagCounts[tag]) {
+                                                                        tagCounts[tag] = { count: 0, latest: articleDate };
+                                                                    }
+                                                                    tagCounts[tag].count += 1;
+                                                                    tagCounts[tag].latest = Math.max(tagCounts[tag].latest, articleDate);
+                                                                }
+                                                            });
+                                                        }
+
+                                                        if (a.author) {
+                                                            const tag = a.author.trim();
+                                                            if (tag.length > 2) {
+                                                                if (!tagCounts[tag]) {
+                                                                    tagCounts[tag] = { count: 0, latest: articleDate };
+                                                                }
+                                                                tagCounts[tag].count += 1;
+                                                                tagCounts[tag].latest = Math.max(tagCounts[tag].latest, articleDate);
+                                                            }
+                                                        }
                                                     });
-                                                    tags.delete('');
-                                                    const tagArr = Array.from(tags).filter(t => t.length > 2).sort();
+
+                                                    const tagArr = Object.keys(tagCounts)
+                                                        .map(tag => ({ tag, count: tagCounts[tag].count, latest: tagCounts[tag].latest }))
+                                                        .sort((a, b) => {
+                                                            if (b.count !== a.count) return b.count - a.count;
+                                                            if (b.latest !== a.latest) return b.latest - a.latest;
+                                                            return a.tag.localeCompare(b.tag, 'en', { sensitivity: 'base' });
+                                                        })
+                                                        .slice(0, 50)
+                                                        .map(item => item.tag);
+
                                                     const tagList = document.getElementById('tag-list');
                                                     if (tagList) {
                                                         tagList.innerHTML = tagArr.map(tag => `<a href="#" class="tag-link" data-tag="${tag}">${tag}</a>`).join(' ');

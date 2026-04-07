@@ -80,7 +80,29 @@ function wrapContentWithParagraphs(text) {
 }
 
 /**
- * Proses image URL - support lokal dan external
+ * Ambil file ID dari URL Google Drive
+ */
+function getGoogleDriveFileId(url) {
+  if (!url) return null;
+  const driveFileIdPatterns = [
+    /\/file\/d\/([^\/\?&#]+)/,
+    /[?&]id=([^&]+)/,
+    /\/open\?id=([^&]+)/,
+    /\/uc\?export=(?:download|view)&id=([^&]+)/,
+  ];
+
+  for (const pattern of driveFileIdPatterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Proses image URL - support lokal, Google Drive, dan external
  */
 function processImageUrl(imageUrl) {
   if (!imageUrl || imageUrl.trim() === '') {
@@ -88,6 +110,13 @@ function processImageUrl(imageUrl) {
   }
   
   imageUrl = imageUrl.trim();
+
+  if (imageUrl.includes('drive.google.com') || imageUrl.includes('docs.google.com')) {
+    const fileId = getGoogleDriveFileId(imageUrl);
+    if (fileId) {
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+    }
+  }
   
   // Jika URL external (http/https), gunakan as-is
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
@@ -100,6 +129,12 @@ function processImageUrl(imageUrl) {
   }
   
   return imageUrl;
+}
+
+function getGoogleDriveImageFallback(url) {
+  const fileId = getGoogleDriveFileId(url);
+  if (!fileId) return url;
+  return `https://drive.google.com/uc?export=view&id=${fileId}`;
 }
 
 /**
@@ -126,7 +161,8 @@ function generateArticleHTML(article, articleNumber) {
     const imageUrl = processImageUrl(article.image);
     // Gunakan relative path untuk artikel di subfolder (../)
     const relativePath = imageUrl.startsWith('http') ? imageUrl : `../${imageUrl}`;
-    imageHtml = `<div class="sn-img">\n                <img src="${relativePath}" alt="${article.title}">\n                </div>`;
+    const fallbackUrl = imageUrl.includes('drive.google.com/thumbnail?id=') ? getGoogleDriveImageFallback(imageUrl) : '';
+    imageHtml = `<div class="sn-img">\n                <img src="${relativePath}" alt="${article.title}"${fallbackUrl ? ` onerror="this.onerror=null;this.src='${fallbackUrl}'"` : ''}>\n                </div>`;
   }
   
   // Buat category badge
