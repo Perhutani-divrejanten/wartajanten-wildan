@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         
-      - name: Deploy via FTP
+      - name: Deploy via FTP (with retry)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -26,8 +26,7 @@ jobs:
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           timeout: 60000
           dangerous-clean-slate: false
-          security: loose
-          log-level: verbose
+          dangerous-allow-insecure-server-connections: true
           exclude: |
             **/.git*
             **/.git*/**
