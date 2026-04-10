@@ -142,7 +142,7 @@ h6 {
 
 .form-control:focus,
 .custom-select:focus {
-    box-shadow: none;
+    box-shadow: #353535;
     border-color: #3c8bdf;
 }
 
@@ -356,7 +356,7 @@ a.btn.active {
 /**********************************/
 .header {
     position: relative;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, .3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .header.header-sticky {
@@ -381,7 +381,7 @@ a.btn.active {
 
 .navbar-dark .navbar-nav .nav-link:hover,
 .navbar-dark .navbar-nav .nav-link.active {
-    background: rgba(228, 122, 46, .2);
+    background: rgba(255, 255, 255, 0.1);
     border-bottom: 2px solid #3c8bdf;
     transition: none;
 }
