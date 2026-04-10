@@ -23,7 +23,7 @@ jobs:
           port: 21
           protocol: ftp
           local-dir: ./
-          server-dir: /arahberita.wartajanten.my.id/
+          server-dir: /wartajabar.wartajanten.my.id/
           timeout: 60000
           dangerous-clean-slate: false
           exclude: |
@@ -43,8 +43,4 @@ jobs:
             final-verification.ps1
             fix-encoding.ps1
             rebrand-to-warta-janten.ps1
-<<<<<<< HEAD
             replace-logo.ps1
-=======
-            replace-logo.ps1
->>>>>>> 08d549297cebd9b24fd7a93104c211412123422b
