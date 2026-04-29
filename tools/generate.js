@@ -198,6 +198,16 @@ function generateFileName(articleNumber) {
  * Parse row data dari Google Sheets atau Web App
  * Handle array format [title, content, ...] atau object format {title, content, ...}
  */
+function normalizeCategory(category) {
+  if (!category) return category;
+  // Standardize category spellings
+  const normalized = category.trim();
+  if (normalized === 'SOsial') {
+    return 'Sosial';
+  }
+  return normalized;
+}
+
 function parseArticleRow(row, index) {
   // Jika row adalah object (dari Web App)
   if (typeof row === 'object' && !Array.isArray(row)) {
@@ -205,7 +215,7 @@ function parseArticleRow(row, index) {
       id: row.id || index + 1,
       title: (row.title || '').trim(),
       content: (row.content || row.isi || row.deskripsi || '').trim(),
-      category: (row.category || row.kategori || '').trim(),
+      category: normalizeCategory(row.category || row.kategori || ''),
       image: (row.image || row.gambar || '').trim(),
       date: (row.date || row.tanggal || '').trim(),
       author: (row.author || row.penulis || '').trim(),
@@ -218,7 +228,7 @@ function parseArticleRow(row, index) {
     id: index + 1,
     title: (row[0] || '').trim(),
     content: (row[1] || '').trim(),
-    category: (row[2] || '').trim(),
+    category: normalizeCategory(row[2] || ''),
     image: (row[3] || '').trim(),
     date: (row[4] || '').trim(),
     author: (row[5] || '').trim(),
