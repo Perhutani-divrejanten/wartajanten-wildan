@@ -138,6 +138,24 @@ function getGoogleDriveImageFallback(url) {
 }
 
 /**
+ * Get max article ID from existing articles.json
+ */
+function getMaxArticleId() {
+  try {
+    if (fs.existsSync(config.ARTICLES_JSON_PATH)) {
+      const data = JSON.parse(fs.readFileSync(config.ARTICLES_JSON_PATH, 'utf-8'));
+      if (data.articles && Array.isArray(data.articles)) {
+        const ids = data.articles.map(a => a.id).filter(id => typeof id === 'number');
+        return ids.length > 0 ? Math.max(...ids) : 90; // Start from 91 if no articles
+      }
+    }
+  } catch (err) {
+    log(`Warning: Could not read existing articles.json: ${err.message}`, 'warn');
+  }
+  return 90; // Default start from 91
+}
+
+/**
  * Generate HTML article dari template
  */
 function generateArticleHTML(article, articleNumber) {
@@ -208,11 +226,11 @@ function normalizeCategory(category) {
   return normalized;
 }
 
-function parseArticleRow(row, index) {
+function parseArticleRow(row, index, startId = 91) {
   // Jika row adalah object (dari Web App)
   if (typeof row === 'object' && !Array.isArray(row)) {
     return {
-      id: row.id || index + 1,
+      id: row.id || (startId + index),
       title: (row.title || '').trim(),
       content: (row.content || row.isi || row.deskripsi || '').trim(),
       category: normalizeCategory(row.category || row.kategori || ''),
@@ -225,7 +243,7 @@ function parseArticleRow(row, index) {
   
   // Jika row adalah array (dari Google Sheets)
   return {
-    id: index + 1,
+    id: index + startId,
     title: (row[0] || '').trim(),
     content: (row[1] || '').trim(),
     category: normalizeCategory(row[2] || ''),
@@ -329,8 +347,11 @@ async function generateArticles() {
     // ========================================================================
     log('Parsing and validating articles...', 'info');
     
+    const maxId = getMaxArticleId();
+    const startId = maxId + 1;
+    
     const articles = rows
-      .map((row, index) => parseArticleRow(row, index))
+      .map((row, index) => parseArticleRow(row, index, startId))
       .filter(article => {
         const valid = isValidArticle(article);
         if (!valid) {
@@ -382,7 +403,7 @@ async function generateArticles() {
       generatedAt: new Date().toISOString(),
       totalArticles: articles.length,
       articles: articles.map((article, index) => ({
-        id: index + 1,
+        id: article.id, // Use the id already set in parseArticleRow
         title: article.title,
         excerpt: article.excerpt || article.content.substring(0, config.EXTRACT_EXCERPT_LENGTH) + '...',
         content: article.content,
