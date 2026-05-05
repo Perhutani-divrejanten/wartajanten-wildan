@@ -30,11 +30,7 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: 195.88.211.226
-<<<<<<< HEAD
-          username: deploy1@bandungbersuara.jabarinfo.id
-=======
           username:  deploy1@bandungbersuara.jabarinfo.id
->>>>>>> 581e3e7cacc2efbcd61abc3cfa16d1a852efa5df
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           protocol: ftp
